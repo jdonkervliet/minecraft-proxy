@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <minecraft.protocol.version>1.17.1-1</minecraft.protocol.version>
+        <minecraft.protocol.version>master-SNAPSHOT</minecraft.protocol.version>
     </properties>
 
     <repositories>
