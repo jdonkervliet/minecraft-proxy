@@ -84,7 +84,7 @@ public class ClientSession {
 
             @Override
             public void packetError(PacketErrorEvent packetErrorEvent) {
-
+                packetErrorEvent.getCause().printStackTrace();
             }
 
             @Override
