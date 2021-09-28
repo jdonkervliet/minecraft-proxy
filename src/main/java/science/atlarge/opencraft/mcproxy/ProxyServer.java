@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ProxyServer {
 
-    public final boolean VERIFY_USERS = true;
+    public final boolean VERIFY_USERS = System.getenv().getOrDefault("VERIFY_USERS", "TRUE").equalsIgnoreCase("TRUE");
 
     private final String targetAddress;
     private final int targetPort;
@@ -40,6 +40,13 @@ public class ProxyServer {
 
         Server server = new TcpServer("0.0.0.0", proxyPort, MinecraftProtocol.class);
         server.setGlobalFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
+
+        if (VERIFY_USERS) {
+            System.out.println("Proxy will authenticate users.");
+        } else {
+            System.out.println("WARNING! Proxy will NOT authenticate users.");
+        }
+
         server.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY, VERIFY_USERS);
         server.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> pingServer());
 
