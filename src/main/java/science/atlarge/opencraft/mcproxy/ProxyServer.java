@@ -39,7 +39,7 @@ public class ProxyServer {
         SessionService sessionService = new SessionService();
 
         Server server = new TcpServer("0.0.0.0", proxyPort, MinecraftProtocol.class);
-        server.setGlobalFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
+        server.setGlobalFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService); //There is no equivalent of a SESSION_SERVICE_KEY in the minecraft constants class
 
         if (VERIFY_USERS) {
             System.out.println("Proxy will authenticate users.");
@@ -53,7 +53,7 @@ public class ProxyServer {
         server.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, (ServerLoginHandler) clientProxySession -> {
             try {
                 GameProfile profile = clientProxySession.getFlag(MinecraftConstants.PROFILE_KEY);
-                TcpClientSession proxyServerSession = new TcpClientSession(targetAddress, targetPort, new MinecraftProtocol(profile.getName()));
+                TcpClientSession proxyServerSession = new TcpClientSession(targetAddress, targetPort, new MinecraftProtocol(profile.getName())); //Needs a client and a proxy as extra arguments
                 proxyServerSession.connect();
                 ClientSession clientSession = new ClientSession(clientProxySession, proxyServerSession);
                 clientSession.init();
@@ -81,12 +81,12 @@ public class ProxyServer {
 
     private ServerStatusInfo pingServer() {
         SessionService sessionService = new SessionService();
-        sessionService.setProxy(Proxy.NO_PROXY);
+        sessionService.setProxy(Proxy.NO_PROXY); //setProxy has no equivalent function in the sessionService Class
 
         final ServerStatusInfo[] serverInfo = {null};
         MinecraftProtocol protocol = new MinecraftProtocol();
-        Session client = new TcpClientSession(targetAddress, targetPort, protocol, null);
-        client.setFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
+        Session client = new TcpClientSession(targetAddress, targetPort, protocol, null); //Needs a client and a proxy as extra arguments
+        client.setFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService); //There is no equivalent of a SESSION_SERVICE_KEY in the minecraft constants class
         client.setFlag(MinecraftConstants.SERVER_INFO_HANDLER_KEY, (ServerInfoHandler) (session, info) -> serverInfo[0] = info);
 
         client.connect();
