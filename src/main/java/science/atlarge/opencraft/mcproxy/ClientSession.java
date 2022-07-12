@@ -5,11 +5,9 @@ import com.github.steveice10.mc.protocol.data.SubProtocol;
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientKeepAlivePacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerKeepAlivePacket;
 import com.github.steveice10.mc.protocol.packet.login.client.EncryptionResponsePacket;
-import com.github.steveice10.mc.protocol.packet.login.client.LoginPluginResponsePacket; //Class doesn't exist
 import com.github.steveice10.mc.protocol.packet.login.client.LoginStartPacket;
 import com.github.steveice10.mc.protocol.packet.login.server.EncryptionRequestPacket;
 import com.github.steveice10.mc.protocol.packet.login.server.LoginDisconnectPacket;
-import com.github.steveice10.mc.protocol.packet.login.server.LoginPluginRequestPacket; //Class doesn't exist
 import com.github.steveice10.mc.protocol.packet.login.server.LoginSetCompressionPacket;
 import com.github.steveice10.mc.protocol.packet.login.server.LoginSuccessPacket;
 import com.github.steveice10.packetlib.Session;
@@ -42,10 +40,8 @@ public class ClientSession {
             EncryptionRequestPacket.class,
             LoginSuccessPacket.class,
             LoginSetCompressionPacket.class,
-            LoginPluginRequestPacket.class, //Class doesn't exist
             LoginStartPacket.class,
-            EncryptionResponsePacket.class,
-            LoginPluginResponsePacket.class //Class doesn't exist
+            EncryptionResponsePacket.class
             //ServerDisconnectPacket.class
     ));
 

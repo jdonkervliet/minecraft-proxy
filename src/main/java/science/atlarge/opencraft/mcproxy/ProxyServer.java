@@ -5,16 +5,19 @@ import com.github.steveice10.mc.auth.service.SessionService;
 import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.mc.protocol.ServerLoginHandler;
+import com.github.steveice10.mc.protocol.data.SubProtocol;
 import com.github.steveice10.mc.protocol.data.status.ServerStatusInfo;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoBuilder;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoHandler;
+import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.server.ServerAdapter;
 import com.github.steveice10.packetlib.event.server.SessionAddedEvent;
 import com.github.steveice10.packetlib.event.server.SessionRemovedEvent;
 import com.github.steveice10.packetlib.tcp.TcpClientSession;
-import com.github.steveice10.packetlib.tcp.TcpServer;
+import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
+
 import java.net.Proxy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +29,7 @@ public class ProxyServer {
     private final String targetAddress;
     private final int targetPort;
     private final int proxyPort;
+    private static final Proxy PROXY = Proxy.NO_PROXY;
 
     private final Map<Session, ClientSession> clientSessions = new ConcurrentHashMap<>();
 
@@ -38,8 +42,7 @@ public class ProxyServer {
     public void start() {
         SessionService sessionService = new SessionService();
 
-        Server server = new TcpServer("0.0.0.0", proxyPort, MinecraftProtocol.class);
-        server.setGlobalFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService); //There is no equivalent of a SESSION_SERVICE_KEY in the minecraft constants class
+        Server server = new Server("0.0.0.0", proxyPort, MinecraftProtocol.class, new TcpSessionFactory(PROXY));
 
         if (VERIFY_USERS) {
             System.out.println("Proxy will authenticate users.");
@@ -47,13 +50,14 @@ public class ProxyServer {
             System.out.println("WARNING! Proxy will NOT authenticate users.");
         }
 
+        server.setGlobalFlag(MinecraftConstants.AUTH_PROXY_KEY, PROXY);
         server.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY, VERIFY_USERS);
         server.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> pingServer());
 
         server.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, (ServerLoginHandler) clientProxySession -> {
             try {
                 GameProfile profile = clientProxySession.getFlag(MinecraftConstants.PROFILE_KEY);
-                TcpClientSession proxyServerSession = new TcpClientSession(targetAddress, targetPort, new MinecraftProtocol(profile.getName())); //Needs a client and a proxy as extra arguments
+                TcpClientSession proxyServerSession = new TcpClientSession(targetAddress, targetPort, new MinecraftProtocol(profile.getName()), new Client("127.0.0.1", 25566, new MinecraftProtocol(SubProtocol.STATUS), new TcpSessionFactory(PROXY)), PROXY);
                 proxyServerSession.connect();
                 ClientSession clientSession = new ClientSession(clientProxySession, proxyServerSession);
                 clientSession.init();
@@ -81,12 +85,9 @@ public class ProxyServer {
 
     private ServerStatusInfo pingServer() {
         SessionService sessionService = new SessionService();
-        sessionService.setProxy(Proxy.NO_PROXY); //setProxy has no equivalent function in the sessionService Class
-
         final ServerStatusInfo[] serverInfo = {null};
-        MinecraftProtocol protocol = new MinecraftProtocol();
-        Session client = new TcpClientSession(targetAddress, targetPort, protocol, null); //Needs a client and a proxy as extra arguments
-        client.setFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService); //There is no equivalent of a SESSION_SERVICE_KEY in the minecraft constants class
+
+        Session client = new TcpClientSession(targetAddress, targetPort, new MinecraftProtocol(SubProtocol.HANDSHAKE), new Client("127.0.0.1", 25566, new MinecraftProtocol(SubProtocol.STATUS), new TcpSessionFactory(PROXY)), PROXY);
         client.setFlag(MinecraftConstants.SERVER_INFO_HANDLER_KEY, (ServerInfoHandler) (session, info) -> serverInfo[0] = info);
 
         client.connect();
